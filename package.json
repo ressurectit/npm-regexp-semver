@@ -1,0 +1,47 @@
+{
+    "name": "npm-regexp-semver",
+    "version": "1.0.0",
+    "description": "NodeJs module that allows updating versions using semver found in files using regexp",
+    "main": "index.js",
+    "scripts":
+    {
+        "prebuild": "typings install && gulp copy-tstypings",
+        "build": "npm run tsc",
+        "clean": "rimraf ./*.d.ts ./directives.js ./*.map ./*.log ./bundle ./directives",
+        "clean:deps": "rimraf ./node_modules ./typings",
+        "clean:all": "npm run clean && npm run clean:deps",
+        "tsc": "tsc",
+        "tsc:w": "tsc -w --sourceMap",
+        "tsc:debug": "tsc --sourceMap",
+        "prepublish": "npm run bundle:package",
+        "postpublish": "npm run clean",
+        "republish": "npm unpublish --force && npm publish",
+        "bundle": "tsc --outFile bundle/ng2-bootstrap-components.dev.js",
+        "bundle:update": "nab bundle/ng2-bootstrap-components.dev.js && uglifyjs -o bundle/ng2-bootstrap-components.min.js -- bundle/ng2-bootstrap-components.dev.js",
+        "bundle:package": "npm run clean && npm run build && npm run bundle && npm run bundle:update",
+        "deploy-stable": "npp -b",
+        "deploy-next": "npp -p -b -s \"beta\" -t \"next\""
+    },
+    "keywords": 
+    [
+        "npm",
+        "semver",
+        "regexp"
+    ],
+    "author": "kukjevov",
+    "license": "ISC",
+    "dependencies": 
+    {
+        "command-line-args": "~2.1.6",
+        "semver": "~5.1.0"
+    },
+    "devDependencies": 
+    {
+        "typescript": "1.8.10",
+        "rimraf": "~2.5.2",
+        "ng2-tstypings": "1.0.5",
+        "gulp": "~3.9.1",
+        "through2": "~2.0.1",
+        "npm-publish-package": "1.2.0"
+    }
+}

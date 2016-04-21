@@ -1,0 +1,13 @@
+/.vscode
+/src
+/typings
+/tsTypings
+.jsbeautifyrc
+tsconfig.json
+typings.json
+gulpfile.js
+*.ts
+*.map
+*.log
+!*.d.ts
+/bundle/ng2-common.dev.d.ts
