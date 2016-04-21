@@ -7,22 +7,19 @@
     {
         "prebuild": "typings install && gulp copy-tstypings",
         "build": "npm run tsc",
-        "clean": "rimraf ./*.d.ts ./directives.js ./*.map ./*.log ./bundle ./directives",
-        "clean:deps": "rimraf ./node_modules ./typings",
+        "clean": "rimraf ./*.d.ts ./index.js ./*.map ./*.log ./bin",
+        "clean:deps": "rimraf ./node_modules ./typings ./tsTypings",
         "clean:all": "npm run clean && npm run clean:deps",
         "tsc": "tsc",
         "tsc:w": "tsc -w --sourceMap",
         "tsc:debug": "tsc --sourceMap",
-        "prepublish": "npm run bundle:package",
+        "prepublish": "npm run build",
         "postpublish": "npm run clean",
         "republish": "npm unpublish --force && npm publish",
-        "bundle": "tsc --outFile bundle/ng2-bootstrap-components.dev.js",
-        "bundle:update": "nab bundle/ng2-bootstrap-components.dev.js && uglifyjs -o bundle/ng2-bootstrap-components.min.js -- bundle/ng2-bootstrap-components.dev.js",
-        "bundle:package": "npm run clean && npm run build && npm run bundle && npm run bundle:update",
         "deploy-stable": "npp -b",
         "deploy-next": "npp -p -b -s \"beta\" -t \"next\""
     },
-    "keywords": 
+    "keywords":
     [
         "npm",
         "semver",
@@ -30,14 +27,15 @@
     ],
     "author": "kukjevov",
     "license": "ISC",
-    "dependencies": 
+    "dependencies":
     {
         "command-line-args": "~2.1.6",
         "semver": "~5.1.0"
     },
-    "devDependencies": 
+    "devDependencies":
     {
         "typescript": "1.8.10",
+        "typings": "~0.8.1",
         "rimraf": "~2.5.2",
         "ng2-tstypings": "1.0.5",
         "gulp": "~3.9.1",
