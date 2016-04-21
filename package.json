@@ -3,6 +3,10 @@
     "version": "1.0.0",
     "description": "NodeJs module that allows updating versions using semver found in files using regexp",
     "main": "index.js",
+    "bin":
+    {
+        "nrs": "bin/npm-regexp-semver.js" 
+    },
     "scripts":
     {
         "prebuild": "typings install && gulp copy-tstypings",
@@ -30,7 +34,8 @@
     "dependencies":
     {
         "command-line-args": "~2.1.6",
-        "semver": "~5.1.0"
+        "semver": "~5.1.0",
+        "fs-finder": "~1.8.1"
     },
     "devDependencies":
     {
