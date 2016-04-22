@@ -6,4 +6,5 @@ var args: IHelpObject = processArguments();
 
 var processor: VersionsProcessor = new VersionsProcessor(args);
 processor.validateConfig()
-    .findSourceVersion();
+    .findSourceVersion()
+    .updateVersions();

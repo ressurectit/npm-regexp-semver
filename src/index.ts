@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as childProcess from "child_process";
 import * as Finder from 'fs-finder';
+import * as semver from "semver";
 
 export interface IHelpObject
 {
@@ -17,7 +18,7 @@ export interface IHelpObject
 
 interface IConfigItem
 {
-    inputFilesPattern: string;
+    inputFilesPattern: string[];
     searchForPattern: string;
     replaceWith: string;
     isVersionReplaceSource?: boolean;
@@ -54,7 +55,7 @@ If no config is specified default config named 'nrs.config.json' will be used.;
 Config format:
 [
     {
-        inputFilesPattern: "relativePathWithWildcards",
+        inputFilesPattern: "arrayOfRelativePathsWithWildcards",
         searchForPattern: "javascriptRegexpSearchPattern",
         replaceWith: "replaceWithPatterWithVersionVariable'\${version}'",
         isVersionReplaceSource: optionalBooleanParameterIndicatingSourceVersionForReplace
@@ -63,7 +64,7 @@ Config format:
     .
     .
     {
-        inputFilesPattern: "*.json",
+        inputFilesPattern: ["*.json"],
         searchForPattern: "version=.*?\"",
         replaceWith: "version=\${version}\"",
         isVersionReplaceSource: true
@@ -93,7 +94,7 @@ export class VersionsProcessor
     //######################### private fields #########################
     private _configPath: string = "";
     private _configuration: IConfig = null;
-    private _sourceVersion: string = "";
+    private _newVersion: string = "";
 
     //######################### constructor #########################
     constructor(private _config: IHelpObject)
@@ -105,7 +106,7 @@ export class VersionsProcessor
     public validateConfig(): VersionsProcessor
     {
         console.log("Validating provided parameters");
-        
+
         try
         {
             if(!fs.statSync(this._configPath).isFile())
@@ -130,135 +131,140 @@ export class VersionsProcessor
 
             process.exit(1);
         }
-        
+
+        console.log("Items that does not contain 'inputFilesPattern' or 'searchForPattern' or 'replaceWith' are skipped.");
+        this._configuration = this._configuration.filter(itm => !!itm.inputFilesPattern &&
+                                                                !!itm.replaceWith &&
+                                                                !!itm.searchForPattern &&
+                                                                itm.inputFilesPattern instanceof Array &&
+                                                                itm.inputFilesPattern.length > 0);
+
         if(this._configuration.length < 1)
         {
             console.error(`Content '${this._configPath}' is an empty array!`);
 
             process.exit(1);
         }
-        
-        console.log("Items that does not contain 'inputFilesPattern' or 'searchForPattern' or 'replaceWith' are skipped.");
-        this._configuration = this._configuration.filter(itm => !itm.inputFilesPattern || !itm.replaceWith || !itm.searchForPattern);
-        
+
         return this;
     }
-    
+
     public findSourceVersion(): VersionsProcessor
     {
         let sourceVersion = this._configuration[0];
         let tmp = this._configuration.filter(itm => itm.isVersionReplaceSource);
-        
+
         if(tmp.length > 0)
         {
-            sourceVersion = tmp[0]; 
+            sourceVersion = tmp[0];
         }
-        
-        let files = Finder.in(process.cwd()).findFiles(sourceVersion.inputFilesPattern);
-        
-        console.log(files);
-        
+
+        console.log(`Searching for files '${sourceVersion.inputFilesPattern[0]}'`);
+        let files = Finder.from(process.cwd()).exclude("node_modules").findFiles(sourceVersion.inputFilesPattern[0]);
+
+        if(files.length < 1)
+        {
+            console.error(`There is no file found with pattern '${sourceVersion.inputFilesPattern[0]}'.`);
+
+            process.exit(1);
+        }
+
+        let content = this._readFile(files[0]);
+        let regexp = new RegExp(sourceVersion.searchForPattern, "g");
+        let result = regexp.exec(content);
+
+        if(!result[1])
+        {
+            console.error(`There is no 1 group that captures version number in pattern '${sourceVersion.searchForPattern}'.`);
+
+            process.exit(1);
+        }
+
+        console.log(`Current version is '${result[1]}'`);
+        this._newVersion = this._updateVersion(result[1]);
+        console.log(`Next version will be '${this._newVersion}'`);
+
         return this;
     }
 
-    // updateModuleNames(): void
-    // {
-    //     for(var x = 0; x < this._registeredModules.length; x++)
-    //     {
-    //         var moduleNameRegex = new RegExp(`System\\.register\\("${this._registeredModules[x]}"`, "g");
+    updateVersions(): void
+    {
+        this._configuration.forEach(config =>
+        {
+            config.inputFilesPattern.forEach(filePattern =>
+            {
+                let files = Finder.from(process.cwd()).exclude("node_modules").findFiles(filePattern);
+                
+                files.forEach(file =>
+                {
+                    console.log(`Processing file '${file}'.`);
+                    
+                    let content = this._readFile(file);
+                    content = content.replace(new RegExp(config.searchForPattern, "g"), config.replaceWith.replace("${version}", this._newVersion));
+                    this._writeFile(file, content);
+                });
+            });
+        });
+    }
 
-    //         this._content = this._content.replace(moduleNameRegex, `System.register("${this._packageName}/${this._registeredModules[x]}"`);
+    //######################### private methods #########################
+    private _readFile(path: string): string
+    {
+        try
+        {
+            return fs.readFileSync(path, 'utf8');
+        }
+        catch(error)
+        {
+            console.error(`Unexpected error occured! Original ${error}`);
 
-    //         var dependencyRegex = new RegExp(`(System\\.register\\(".*?",\\s?\\[.*?)"${this._registeredModules[x]}"`, "g");
+            process.exit(1);
+        }
+    }
 
-    //         this._content = this._content.replace(dependencyRegex, `$1"${this._packageName}/${this._registeredModules[x]}"`);
-    //     }
+    private _writeFile(path: string, content: string): void
+    {
+        try
+        {
+            fs.writeFileSync(path, content, 'utf8');
+        }
+        catch(error)
+        {
+            console.error(`Unexpected error occured! Original ${error}`);
 
-    //     this._writeFile();
-    // }
-
-    // validateBundle(): BundleProcessor
-    // {
-    //     try
-    //     {
-    //         if(!fs.statSync(this._bundlePath).isFile())
-    //         {
-    //             console.error(`'${this._bundlePath}' is not a file!`);
-
-    //             process.exit(1);
-    //         }
-    //     }
-    //     catch (error)
-    //     {
-    //         console.error(`There is no '${this._bundlePath}'. Original ${error}`);
-
-    //         process.exit(1);
-    //     }
-
-    //     try
-    //     {
-    //         this._projectPath = path.join(process.cwd(), "package.json");
-
-    //         if(!fs.statSync(this._projectPath).isFile())
-    //         {
-    //             console.error(`'${this._projectPath}' is not a file!`);
-
-    //             process.exit(1);
-    //         }
-    //     }
-    //     catch (error)
-    //     {
-    //         console.error(`There is no '${this._projectPath}'. Original ${error}`);
-
-    //         process.exit(1);
-    //     }
-
-    //     console.log(`Bundle file '${this._bundlePath}' exists.`);
-    //     console.log(`Package.json file '${this._projectPath}' exists.`);
-
-    //     return this;
-    // }
-
-    // getPackageNames(): BundleProcessor
-    // {
-    //     //TODO: add possibility to create relative hierarchy within module
-    //     //this._packageName = path.basename(process.cwd());
-    //     var project = require(this._projectPath);
-    //     this._packageName = project.name;
-
-    //     console.log(`Package name is '${this._packageName}'`);
-
-    //     return this;
-    // }
-
-    // //######################### private methods #########################
-    // private _readFile(): void
-    // {
-    //     try
-    //     {
-    //         this._content = fs.readFileSync(this._bundlePath, 'utf8');
-    //     }
-    //     catch(error)
-    //     {
-    //         console.error(`Unexpected error occured! Original ${error}`);
-
-    //         process.exit(1);
-    //     }
-    // }
-
-    // private _writeFile(): void
-    // {
-    //     try
-    //     {
-    //         fs.writeFileSync(this._bundlePath, this._content, 'utf8');
-    //     }
-    //     catch(error)
-    //     {
-    //         console.error(`Unexpected error occured! Original ${error}`);
-
-    //         process.exit(1);
-    //     }
-
-    //     console.log("Bundle successfuly updated.");
-    // }
+            process.exit(1);
+        }
+    }
+    
+    private _updateVersion(version: string): string
+    {
+        let preVersion = /\d+\.\d+\.\d+-.*?/g.test(version);
+        
+        if(this._config.pre && preVersion)
+        {
+            return semver.inc(version, "pre", this._config.preReleaseSuffix)
+        }
+        
+        var identifier: string = "";
+        
+        if(this._config.pre)
+        {
+            identifier = "pre";
+        }
+        
+        if(this._config.buildNumber)
+        {
+            identifier += "patch";
+        }
+        else if(this._config.majorNumber)
+        {
+            identifier += "major";
+        }
+        else
+        {
+            identifier += "minor";
+        }
+        
+        return semver.inc(version, identifier, this._config.preReleaseSuffix)
+    }
 }
