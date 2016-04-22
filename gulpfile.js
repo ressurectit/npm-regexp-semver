@@ -34,9 +34,17 @@ gulp.task("copy-command-line-usage", function()
         .pipe(gulp.dest("tsTypings"));
 });
 
+gulp.task("copy-fs-finder", function()
+{
+    return gulp.src("node_modules/ng2-tstypings/tsTypings/fs-finder.d.ts")
+        .pipe(logCopied())
+        .pipe(gulp.dest("tsTypings"));
+});
+
 gulp.task("copy-tstypings", 
           ["copy-semver",
            "copy-command-line-args",
+           "copy-fs-finder",
            "copy-command-line-usage"], 
           function(cb)
 {

@@ -1,18 +1,9 @@
 #!/usr/bin/env node
 
-import {IHelpObject, processArguments, BundleProcessor} from "../index";
+import {IHelpObject, processArguments, VersionsProcessor} from "../index";
 
 var args: IHelpObject = processArguments();
 
-if(!args.bundle || args.bundle.length < 1)
-{
-    console.error("Parameter bundle is required!");
-    
-    process.exit(1);
-}
-
-var processor: BundleProcessor = new BundleProcessor(args.bundle);
-processor.validateBundle()
-    .getPackageNames()
-    .findRegisters()
-    .updateModuleNames();
+var processor: VersionsProcessor = new VersionsProcessor(args);
+processor.validateConfig()
+    .findSourceVersion();

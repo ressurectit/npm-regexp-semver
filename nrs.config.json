@@ -1,0 +1,8 @@
+[
+    {
+        "inputFilesPatter": "*.json",
+        "searchForPatter": "version=.*?\"",
+        "replaceWith": "version=${version}\"",
+        "isVersionReplaceSource": true
+    }
+]

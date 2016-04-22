@@ -9,7 +9,7 @@
     },
     "scripts":
     {
-        "prebuild": "typings install && gulp copy-tstypings",
+        "prebuild": "npm run clean && typings install && gulp copy-tstypings",
         "build": "npm run tsc",
         "clean": "rimraf ./*.d.ts ./index.js ./*.map ./*.log ./bin",
         "clean:deps": "rimraf ./node_modules ./typings ./tsTypings",
@@ -42,7 +42,7 @@
         "typescript": "1.8.10",
         "typings": "~0.8.1",
         "rimraf": "~2.5.2",
-        "ng2-tstypings": "1.0.5",
+        "ng2-tstypings": "1.0.6",
         "gulp": "~3.9.1",
         "through2": "~2.0.1",
         "npm-publish-package": "1.2.0"
