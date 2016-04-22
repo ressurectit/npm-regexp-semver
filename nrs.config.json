@@ -1,8 +1,0 @@
-[
-    {
-        "inputFilesPattern": ["package.json"],
-        "searchForPattern": "\"version\": \"(.*?)\",",
-        "replaceWith": "version: \"${version}\"",
-        "isVersionReplaceSource": true
-    }
-]

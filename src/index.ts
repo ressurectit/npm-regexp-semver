@@ -64,18 +64,18 @@ Config format:
     .
     .
     {
-        inputFilesPattern: ["*.json"],
-        searchForPattern: "version=.*?\"",
-        replaceWith: "version=\${version}\"",
-        isVersionReplaceSource: true
+        "inputFilesPattern": ["package.json"],
+        "searchForPattern": "\"version\": \"(.*?)\",",
+        "replaceWith": "version: \"\${version}\"",
+        "isVersionReplaceSource": true
     }
 ]
 `,
             examples:
             [
                 {
-                    example: "> ",
-                    description: ''
+                    example: "> nrs",
+                    description: 'Updates versions using configuration from file "nrs.config.json", updates minor version 1.2.3 => 1.3.0'
                 }
             ]
         }));
