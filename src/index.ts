@@ -173,7 +173,7 @@ export class VersionsProcessor
         let regexp = new RegExp(sourceVersion.searchForPattern, "g");
         let result = regexp.exec(content);
 
-        if(!result[1])
+        if(!result || result.length < 1)
         {
             console.error(`There is no 1 group that captures version number in pattern '${sourceVersion.searchForPattern}'.`);
 
