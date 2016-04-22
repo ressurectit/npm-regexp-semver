@@ -19,6 +19,8 @@ export interface IHelpObject
 interface IConfigItem
 {
     inputFilesPattern: string[];
+    searchInPath?: string[];
+    searchFromPath?: string[];
     searchForPattern: string;
     replaceWith: string;
     isVersionReplaceSource?: boolean;
@@ -50,12 +52,16 @@ export function processArguments(): IHelpObject
             title: "npm-regexp-semver (nrs)",
             description:
 `Application that allows updating versions using semver version found in files using regexp.
+You have to specify one of 'searchInPath', 'searchFromPath'.
+
 If no config is specified default config named 'nrs.config.json' will be used.;
 
 Config format:
 [
     {
         inputFilesPattern: "arrayOfRelativePathsWithWildcards",
+        searchInPath: "arrayOfPathsThatAreSearchedInNonRecursive",
+        searchFromPath: "arrayOfPathsThatAreSearchedInRecursive",
         searchForPattern: "javascriptRegexpSearchPattern",
         replaceWith: "replaceWithPatterWithVersionVariable'\${version}'",
         isVersionReplaceSource: optionalBooleanParameterIndicatingSourceVersionForReplace
@@ -66,7 +72,7 @@ Config format:
     {
         "inputFilesPattern": ["package.json"],
         "searchForPattern": "\"version\": \"(.*?)\",",
-        "replaceWith": "version: \"\${version}\"",
+        "replaceWith": "\"version\": \"\${version}\",",
         "isVersionReplaceSource": true
     }
 ]
@@ -132,12 +138,13 @@ export class VersionsProcessor
             process.exit(1);
         }
 
-        console.log("Items that does not contain 'inputFilesPattern' or 'searchForPattern' or 'replaceWith' are skipped.");
+        console.log("Items that does not contain 'inputFilesPattern' or 'searchForPattern' or 'replaceWith' or at least one of 'searchInPath' or 'searchFromPath' are skipped.");
         this._configuration = this._configuration.filter(itm => !!itm.inputFilesPattern &&
                                                                 !!itm.replaceWith &&
                                                                 !!itm.searchForPattern &&
                                                                 itm.inputFilesPattern instanceof Array &&
-                                                                itm.inputFilesPattern.length > 0);
+                                                                itm.inputFilesPattern.length > 0 && 
+                                                                (!!itm.searchInPath || !!itm.searchFromPath));
 
         if(this._configuration.length < 1)
         {
@@ -159,8 +166,20 @@ export class VersionsProcessor
             sourceVersion = tmp[0];
         }
 
-        console.log(`Searching for files '${sourceVersion.inputFilesPattern[0]}'`);
-        let files = Finder.from(process.cwd()).exclude("node_modules").findFiles(sourceVersion.inputFilesPattern[0]);
+        let files = [];
+        
+        if(sourceVersion.searchInPath && sourceVersion.searchInPath instanceof Array && sourceVersion.searchInPath.length > 0)
+        {
+            console.log(`Searching for source version files '${sourceVersion.inputFilesPattern[0]}' in '${sourceVersion.searchInPath[0]}'`);
+            
+            files = Finder.in(path.join(process.cwd(), sourceVersion.searchInPath[0])).exclude("node_modules").findFiles(sourceVersion.inputFilesPattern[0]);
+        }
+        else if(sourceVersion.searchFromPath && sourceVersion.searchFromPath instanceof Array && sourceVersion.searchFromPath.length > 0)
+        {
+            console.log(`Searching for source version files '${sourceVersion.inputFilesPattern[0]}' from '${sourceVersion.searchFromPath[0]}'`);
+            
+            files = Finder.from(path.join(process.cwd(), sourceVersion.searchFromPath[0])).exclude("node_modules").findFiles(sourceVersion.inputFilesPattern[0]);
+        }
 
         if(files.length < 1)
         {
@@ -193,7 +212,29 @@ export class VersionsProcessor
         {
             config.inputFilesPattern.forEach(filePattern =>
             {
-                let files = Finder.from(process.cwd()).exclude("node_modules").findFiles(filePattern);
+                let files = [];
+                
+                if(config.searchInPath && config.searchInPath instanceof Array && config.searchInPath.length > 0)
+                {
+                    config.searchInPath.forEach(dir =>
+                    {
+                        Finder.in(path.join(process.cwd(), dir)).exclude("node_modules").findFiles(filePattern).forEach(foundFile =>
+                        {
+                            files.push(foundFile);
+                        });
+                    });
+                }
+                
+                if(config.searchFromPath && config.searchFromPath instanceof Array && config.searchFromPath.length > 0)
+                {
+                    config.searchFromPath.forEach(dir =>
+                    {
+                        Finder.from(path.join(process.cwd(), dir)).exclude("node_modules").findFiles(filePattern).forEach(foundFile =>
+                        {
+                            files.push(foundFile);
+                        });
+                    });
+                }
                 
                 files.forEach(file =>
                 {
