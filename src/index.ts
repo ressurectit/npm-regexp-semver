@@ -161,6 +161,14 @@ export class VersionsProcessor
         let sourceVersion = this._configuration[0];
         let tmp = this._configuration.filter(itm => itm.isVersionReplaceSource);
 
+        if (this._config.specificVersion) 
+        {
+            console.log(`Specified version is '${this._config.specificVersion}'`);
+
+            this._newVersion = this._config.specificVersion;
+            return this;
+        }
+
         if(tmp.length > 0)
         {
             sourceVersion = tmp[0];
@@ -171,7 +179,7 @@ export class VersionsProcessor
         if(sourceVersion.searchInPath && sourceVersion.searchInPath instanceof Array && sourceVersion.searchInPath.length > 0)
         {
             console.log(`Searching for source version files '${sourceVersion.inputFilesPattern[0]}' in '${sourceVersion.searchInPath[0]}'`);
-            
+
             files = Finder.in(path.join(process.cwd(), sourceVersion.searchInPath[0])).exclude("node_modules").findFiles(sourceVersion.inputFilesPattern[0]);
         }
         else if(sourceVersion.searchFromPath && sourceVersion.searchFromPath instanceof Array && sourceVersion.searchFromPath.length > 0)
