@@ -7,11 +7,19 @@
         "declaration": true,
         "noImplicitAny": false,
         "moduleResolution": "node",
-        "outDir": "."
+        "outDir": ".",
+        "types": 
+        [
+            "node"
+        ],
+        "typeRoots": 
+        [
+            "node_modules/@types",
+            "node_modules/@ng/types"
+        ]
     },
-    "exclude": [
-        "node_modules",
-        "typings/browser",
-        "typings/browser.d.ts"
+    "exclude": 
+    [
+        "node_modules"
     ]
 }

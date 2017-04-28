@@ -1,6 +1,6 @@
 {
     "name": "npm-regexp-semver",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "description": "NodeJs module that allows updating versions using semver found in files using regexp",
     "main": "index.js",
     "bin":
@@ -9,7 +9,7 @@
     },
     "scripts":
     {
-        "prebuild": "npm run clean && typings install && gulp copy-tstypings",
+        "prebuild": "npm run clean",
         "build": "npm run tsc",
         "clean": "rimraf ./*.d.ts ./index.js ./*.map ./*.log ./bin",
         "clean:deps": "rimraf ./node_modules ./typings ./tsTypings",
@@ -19,9 +19,8 @@
         "tsc:debug": "tsc --sourceMap",
         "prepublish": "npm run build",
         "postpublish": "npm run clean",
-        "republish": "npm unpublish --force && npm publish",
-        "deploy-stable": "npp -b",
-        "deploy-next": "npp -p -s \"beta\" -t \"next\""
+        "deploy:stable": "npp -b",
+        "deploy:next": "npp -p -s \"beta\" -t \"next\""
     },
     "keywords":
     [
@@ -34,17 +33,15 @@
     "dependencies":
     {
         "command-line-args": "~2.1.6",
-        "semver": "~5.1.0",
+        "semver": "~5.3.0",
         "fs-finder": "~1.8.1"
     },
     "devDependencies":
     {
-        "typescript": "1.8.10",
-        "typings": "~0.8.1",
-        "rimraf": "~2.5.2",
-        "ng2-tstypings": "1.0.9",
-        "gulp": "~3.9.1",
-        "through2": "~2.0.1",
+        "typescript": "2.3.1",
+        "@types/node": "~7.0.14",
+        "@ng/types": "1.1.2",
+        "rimraf": "~2.6.1",
         "npm-publish-package": "1.2.0"
     }
 }
