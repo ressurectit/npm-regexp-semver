@@ -12,6 +12,7 @@ export interface IHelpObject
     pre?: boolean;
     buildNumber?: boolean;
     majorNumber?: boolean;
+    ignorePrefix?: string;
     specificVersion?: string;
     preReleaseSuffix?: string;
 }
@@ -39,6 +40,7 @@ export function processArguments(): IHelpObject
         { name: "pre", alias: "p", type: Boolean, description: "Indication that version should be set to prerelease version." },
         { name: "buildNumber", alias: "b", type: Boolean, description: "Indicates that build number of version should be incremented." },
         { name: "majorNumber", alias: "m", type: Boolean, description: "Indicates that major number of version should be incremented." },
+        { name: "ignorePrefix", alias: "i", type: String, description: "Version prefix regular expression pattern. This prefix is not part of semver version and will be ignored during version change.", typeLabel: "<prefix>" },
         { name: "specificVersion", alias: "v", type: String, description: "Specific version that is going to be set. If this is set overrides any other version parameter.", typeLabel: "<version>" },
         { name: "preReleaseSuffix", alias: "s", type: String, description: "Suffix that will be added to version number. If not specified 'pre' is used. It is not used without 'pre' parameter.", defaultValue: "alpha", typeLabel: "<suffix>"},
     ]);
