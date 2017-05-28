@@ -1,6 +1,6 @@
 {
     "name": "npm-regexp-semver",
-    "version": "1.1.2",
+    "version": "1.2.0",
     "description": "NodeJs module that allows updating versions using semver found in files using regexp",
     "main": "index.js",
     "bin":

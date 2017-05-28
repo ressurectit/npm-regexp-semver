@@ -103,6 +103,7 @@ export class VersionsProcessor
     private _configPath: string = "";
     private _configuration: IConfig = null;
     private _newVersion: string = "";
+    private _versionPrefix: string = "";
 
     //######################### constructor #########################
     constructor(private _config: IHelpObject)
@@ -209,8 +210,23 @@ export class VersionsProcessor
             process.exit(1);
         }
 
-        console.log(`Current version is '${result[1]}'`);
-        this._newVersion = this._updateVersion(result[1]);
+        let capturedVersion = result[1];
+        console.log(`Current version is '${capturedVersion}'`);
+
+        if(this._config.ignorePrefix)
+        {
+            let prefixRegex = new RegExp(this._config.ignorePrefix, "g");
+            let matches = prefixRegex.exec(`^${capturedVersion}`);
+
+            if(matches)
+            {
+                this._versionPrefix = matches[0];
+                capturedVersion = capturedVersion.replace(prefixRegex, "");
+                console.log(`Version prefix is '${this._versionPrefix}'`);
+            }
+        }
+
+        this._newVersion = this._updateVersion(capturedVersion);
         console.log(`Next version will be '${this._newVersion}'`);
 
         return this;
@@ -251,7 +267,7 @@ export class VersionsProcessor
                     console.log(`Processing file '${file}'.`);
                     
                     let content = this._readFile(file);
-                    content = content.replace(new RegExp(config.searchForPattern, "g"), config.replaceWith.replace("${version}", this._newVersion));
+                    content = content.replace(new RegExp(config.searchForPattern, "g"), config.replaceWith.replace("${version}", this._versionPrefix + this._newVersion));
                     this._writeFile(file, content);
                 });
             });
