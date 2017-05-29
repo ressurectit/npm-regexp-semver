@@ -215,8 +215,8 @@ export class VersionsProcessor
 
         if(this._config.ignorePrefix)
         {
-            let prefixRegex = new RegExp(this._config.ignorePrefix, "g");
-            let matches = prefixRegex.exec(`^${capturedVersion}`);
+            let prefixRegex = new RegExp(`^${this._config.ignorePrefix}`, "g");
+            let matches = prefixRegex.exec(capturedVersion);
 
             if(matches)
             {
